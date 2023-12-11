@@ -162,4 +162,14 @@ void oxim::tick(){
 
     timeElapsed += millis() - pastTime;
     pastTime = millis();
+
+    int spo2Average = 0;
+    for(int i = 0; i != uploadPackageLength; i++)
+        spo2Average += spo2Array[i];
+    spo2Average /= uploadPackageLength;
+
+    if(spo2Average < 90)
+        valve.step(512);
+    else if(spo2Average > 95)
+        valve.step(-512);
 }
