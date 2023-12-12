@@ -1,8 +1,6 @@
 #ifndef OXIM_HPP_INCLUDED_
 #define OXIM_HPP_INCLUDED_
 
-#define OXIM_BYPASS_SENSOR
-
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -24,6 +22,9 @@ static_assert(bufferLength >= uploadPackageLength);
 
 constexpr uint8_t fatalErrorLED = 26;
 constexpr uint8_t resetButton = 34;
+constexpr uint8_t bypassSensor = 27;
+constexpr uint8_t spo2Potentiometer = 32;
+constexpr uint8_t heartRatePotentiometer = 33;
 
 constexpr uint8_t SCREEN_WIDTH = 128;
 constexpr uint8_t SCREEN_HEIGHT = 64;

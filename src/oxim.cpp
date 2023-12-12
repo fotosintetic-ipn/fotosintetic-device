@@ -67,12 +67,13 @@ void oxim::display_information(uint64_t const& saturation, uint64_t const& heart
 
 void oxim::init(){
     pinMode(fatalErrorLED, OUTPUT);
+    digitalWrite(fatalErrorLED, LOW);
     pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
     pinMode(resetButton, INPUT);
-    #ifdef OXIM_BYPASS_SENSOR
-    pinMode(32, INPUT);
-    pinMode(33, INPUT);
-    #endif // OXIM_BYPASS_SENSOR
+    pinMode(bypassSensor, INPUT);
+    pinMode(spo2Potentiometer, INPUT);
+    pinMode(heartRatePotentiometer, INPUT);
 
     configure_particle_sensor();
     configure_screen();
@@ -100,12 +101,12 @@ void oxim::tick(){
 
     get_data_from_particle_sensor(25, 25);
     maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &isSpo2Valid, &heartRate, &isHeartRateValid);
-    #ifdef OXIM_BYPASS_SENSOR
-    isSpo2Valid = true;
-    isHeartRateValid = true;
-    spo2 = constrain(map(analogRead(32), 200, 4000, 0, 100), 0, 100);
-    heartRate = constrain(map(analogRead(33), 200, 4000, 0, 255), 0, 255);
-    #endif // OXIM_BYPASS_SENSOR
+    if(digitalRead(bypassSensor)){
+        isSpo2Valid = true;
+        isHeartRateValid = true;
+        spo2 = constrain(map(analogRead(spo2Potentiometer), 200, 4000, 0, 100), 0, 100);
+        heartRate = constrain(map(analogRead(heartRatePotentiometer), 200, 4000, 0, 255), 0, 255);
+    }
     samples++;
 
     if(isSpo2Valid && spo2ArrayCurrentIndex < uploadPackageLength) spo2Precision++;
@@ -154,7 +155,7 @@ void oxim::tick(){
 
         ESP.restart();
     }
-
+    
     if(attemptingToReconnect && timeElapsed / 500 >= 1){
         digitalWrite(BUILTIN_LED, status);
         status = !status;
