@@ -96,6 +96,7 @@ void oxim::tick(){
     static uint64_t timeElapsed = 0;
     static uint64_t pastTime = millis();
     static bool status;
+    static uint8_t valveCurrentPosition = 5;
 
     get_data_from_particle_sensor(25, 25);
     maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &isSpo2Valid, &heartRate, &isHeartRateValid);
@@ -165,11 +166,15 @@ void oxim::tick(){
             spo2Average += spo2Array[i];
         spo2Average /= uploadPackageLength;
 
-        if(spo2Average < 90)
-            valve.step(512);
-        else if(spo2Average > 95)
-            valve.step(-512);
-        Serial.println(spo2Average);
+        if(spo2Average < 90 && valveCurrentPosition < 10){
+            valve.step(valveStepsPerRevolution / 12);
+            valveCurrentPosition++;
+        }
+        else if(spo2Average > 95 && valveCurrentPosition > 0){
+            valve.step(-valveStepsPerRevolution / 12);
+            valveCurrentPosition--;
+        }
+        Serial.println(valveCurrentPosition);
 
         if(client.is_ready())
             client.upload_data(heartRateArray, heartRatePrecision / static_cast<double>(uploadPackageLength),

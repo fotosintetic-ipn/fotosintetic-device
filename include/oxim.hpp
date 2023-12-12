@@ -39,6 +39,8 @@ constexpr uint8_t SECOND_ROW_Y_COORDINATE = FIRST_ROW_Y_COORDINATE + 2 * NUMBER_
 
 constexpr uint32_t wifiAttemptReconnectTimeout = 30000;
 
+constexpr int32_t valveStepsPerRevolution = 4096;
+
 class oxim{
     uint32_t irBuffer[bufferLength];
     uint32_t redBuffer[bufferLength];
