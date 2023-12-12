@@ -28,7 +28,7 @@ void oxim::configure_screen(){
 
 void oxim::configure_valve(){
     valve = Stepper(2048, 23, 25, 19, 18);
-    valve.setSpeed(12);
+    valve.setSpeed(10);
 }
 
 void oxim::get_data_from_particle_sensor(uint64_t count, uint64_t discard){
@@ -159,27 +159,29 @@ void oxim::tick(){
         status = !status;
     }
 
-    if(client.is_ready() && samples >= uploadPackageLength){
-        samples = 0;
-        client.upload_data(heartRateArray, heartRatePrecision / static_cast<double>(uploadPackageLength),
-                           spo2Array, spo2Precision / static_cast<double>(uploadPackageLength));
+    if(samples >= uploadPackageLength){
+        int spo2Average = 0;
+        for(int i = 0; i != uploadPackageLength; i++)
+            spo2Average += spo2Array[i];
+        spo2Average /= uploadPackageLength;
+
+        if(spo2Average < 90)
+            valve.step(512);
+        else if(spo2Average > 95)
+            valve.step(-512);
+        Serial.println(spo2Average);
+
+        if(client.is_ready())
+            client.upload_data(heartRateArray, heartRatePrecision / static_cast<double>(uploadPackageLength),
+                            spo2Array, spo2Precision / static_cast<double>(uploadPackageLength));
 
         heartRatePrecision = 0;
         spo2Precision = 0;
         heartRateArrayCurrentIndex = 0;
         spo2ArrayCurrentIndex = 0;
+        samples = 0;
     }
 
     timeElapsed += millis() - pastTime;
     pastTime = millis();
-
-    int spo2Average = 0;
-    for(int i = 0; i != uploadPackageLength; i++)
-        spo2Average += spo2Array[i];
-    spo2Average /= uploadPackageLength;
-
-    if(spo2Average < 90)
-        valve.step(512);
-    else if(spo2Average > 95)
-        valve.step(-512);
 }
