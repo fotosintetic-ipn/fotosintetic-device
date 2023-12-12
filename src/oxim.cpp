@@ -69,6 +69,10 @@ void oxim::init(){
     pinMode(fatalErrorLED, OUTPUT);
     pinMode(LED_BUILTIN, OUTPUT);
     pinMode(resetButton, INPUT);
+    #ifdef OXIM_BYPASS_SENSOR
+    pinMode(32, INPUT);
+    pinMode(33, INPUT);
+    #endif // OXIM_BYPASS_SENSOR
 
     configure_particle_sensor();
     configure_screen();
@@ -95,6 +99,12 @@ void oxim::tick(){
 
     get_data_from_particle_sensor(25, 25);
     maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &isSpo2Valid, &heartRate, &isHeartRateValid);
+    #ifdef OXIM_BYPASS_SENSOR
+    isSpo2Valid = true;
+    isHeartRateValid = true;
+    spo2 = constrain(map(analogRead(32), 200, 4000, 0, 100), 0, 100);
+    heartRate = constrain(map(analogRead(33), 200, 4000, 0, 255), 0, 255);
+    #endif // OXIM_BYPASS_SENSOR
     samples++;
 
     if(isSpo2Valid && spo2ArrayCurrentIndex < uploadPackageLength) spo2Precision++;

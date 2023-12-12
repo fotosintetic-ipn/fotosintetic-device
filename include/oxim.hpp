@@ -1,6 +1,8 @@
 #ifndef OXIM_HPP_INCLUDED_
 #define OXIM_HPP_INCLUDED_
 
+#define OXIM_BYPASS_SENSOR
+
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
