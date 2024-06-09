@@ -2,6 +2,8 @@
 #include "oxim_server.hpp"
 #include "oxim_client.hpp"
 
+oxim::oxim() : sim900(4, 5) {}
+
 void oxim::configure_particle_sensor(){
     if(!particleSensor.begin(Wire, I2C_SPEED_FAST)){
         digitalWrite(fatalErrorLED, HIGH);
@@ -29,6 +31,31 @@ void oxim::configure_screen(){
 void oxim::configure_valve(){
     valve = Stepper(2048, 23, 25, 19, 18);
     valve.setSpeed(10);
+}
+
+void oxim::configure_sim900(){
+    sim900.begin(9600);
+    sim900.println((char) 27); // Cancel any previous ongoing operations
+
+    while(sim900Strikes <= 3) {
+        sim900.println("AT");
+        if(!check_sim900_response())
+            continue;
+        
+        sim900.println("AT+CSQ");
+        if(!check_sim900_response())
+            continue;
+
+        sim900.println("AT+CCID");
+        if(!check_sim900_response())
+            continue;
+
+        sim900.println("AT+CREG?");
+        if(!check_sim900_response())
+            continue;
+        else break;
+    }
+    sim900Strikes = 0;
 }
 
 void oxim::get_data_from_particle_sensor(uint64_t count, uint64_t discard){
@@ -65,6 +92,55 @@ void oxim::display_information(uint64_t const& saturation, uint64_t const& heart
     display.display();
 }
 
+bool oxim::check_sim900_response(String const& toCheck, uint32_t const& offset){
+    delay(500);
+    if(!sim900.available()){
+        sim900Strikes++;
+        return false;
+    }
+
+    String response = sim900.readString();
+    String status = response.substring(response.length() - offset,response.length() - offset + toCheck.length());
+    if(!toCheck.equals(status)){
+        sim900Strikes++;
+        return false;
+    }
+    return true;
+}
+
+void oxim::send_sms(String const& content){
+    String phone_number;
+
+    Preferences prefs;
+    prefs.begin("oximPrefs");
+    if(!prefs.isKey("phone_number") || prefs.getString("phone_number") == "")
+        return;
+    phone_number = prefs.getString("phone_number");
+    prefs.end();
+
+    while(sim900Strikes <= 3) {
+        sim900.println((char) 27); // Cancel any previous ongoing operations
+
+        sim900.println("AT+CMGF=1");
+        if(!check_sim900_response())
+            continue;
+        
+        sim900.print("AT+CMGS=\"");
+        sim900.print(phone_number);
+        sim900.println("\"\r");
+        if(!check_sim900_response(String(">"), 2))
+            continue;
+
+        sim900.println(content);
+        if(!check_sim900_response(String(">"), 2))
+            continue;
+
+        sim900.println((char)26); // Send
+        break;
+    }
+    sim900Strikes = 0;
+}
+
 void oxim::init(){
     pinMode(fatalErrorLED, OUTPUT);
     digitalWrite(fatalErrorLED, LOW);
@@ -79,6 +155,7 @@ void oxim::init(){
     configure_screen();
     display_information(0, 0);
     configure_valve();
+    configure_sim900();
     WiFiClass::mode(WIFI_AP_STA);
     WiFi.softAP("OXIM");
     Preferences prefs;
@@ -98,6 +175,7 @@ void oxim::tick(){
     static uint64_t pastTime = millis();
     static bool status;
     static uint8_t valveCurrentPosition = 5;
+    static uint64_t lastSentSms = 90000;
 
     get_data_from_particle_sensor(25, 25);
     maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &isSpo2Valid, &heartRate, &isHeartRateValid);
@@ -151,6 +229,7 @@ void oxim::tick(){
         prefs.remove("wifi_password");
         prefs.remove("username");
         prefs.remove("password");
+        prefs.remove("phone_number");
         prefs.end();
 
         ESP.restart();
@@ -163,9 +242,13 @@ void oxim::tick(){
 
     if(samples >= uploadPackageLength){
         int spo2Average = 0;
-        for(int i = 0; i != uploadPackageLength; i++)
+        int heartRateAverage = 0;
+        for(int i = 0; i != uploadPackageLength; i++){
             spo2Average += spo2Array[i];
+            heartRateAverage += heartRateArray[i];
+        }
         spo2Average /= uploadPackageLength;
+        heartRateAverage /= uploadPackageLength;
 
         if(spo2Average < 90 && valveCurrentPosition < 10){
             valve.step(valveStepsPerRevolution / 12);
@@ -176,6 +259,18 @@ void oxim::tick(){
             valveCurrentPosition--;
         }
         Serial.println(valveCurrentPosition);
+
+        if(lastSentSms >= smsWaitTime){
+            if(spo2Average < 75){
+                send_sms("Oxygen abnormally low!\nCurrent value: " + String(spo2Average) + "%");
+                delay(2500);
+            }
+            if(heartRateAverage <= 50)
+                send_sms("Heart rate abnormally low!\nCurrent value: " + String(heartRateAverage) + "bpm");
+            if(heartRateAverage >= 110)
+                send_sms("Heart rate abnormally high!\nCurrent value: " + String(heartRateAverage) + "bpm");
+            lastSentSms = 0;
+        }    
 
         if(client.is_ready())
             client.upload_data(heartRateArray, heartRatePrecision / static_cast<double>(uploadPackageLength),
@@ -188,6 +283,7 @@ void oxim::tick(){
         samples = 0;
     }
 
+    lastSentSms += millis() - pastTime;
     timeElapsed += millis() - pastTime;
     pastTime = millis();
 }

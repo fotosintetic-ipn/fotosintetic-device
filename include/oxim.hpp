@@ -8,6 +8,7 @@
 #include <MAX30105.h>
 #include <spo2_algorithm.h>
 #include <Stepper.h>
+#include <SoftwareSerial.h>
 
 #include "assets.h"
 #include "oxim_server.hpp"
@@ -42,6 +43,8 @@ constexpr uint32_t wifiAttemptReconnectTimeout = 30000;
 
 constexpr int32_t valveStepsPerRevolution = 4096;
 
+constexpr uint32_t smsWaitTime = 90000;
+
 class oxim{
     uint32_t irBuffer[bufferLength];
     uint32_t redBuffer[bufferLength];
@@ -58,6 +61,9 @@ class oxim{
 
     Stepper valve = Stepper(0, 0, 0, 0, 0);
 
+    int sim900Strikes = 0;
+    SoftwareSerial sim900;
+
     uint8_t spo2Precision = 0;
     uint8_t spo2ArrayCurrentIndex = 0;
     uint8_t spo2Array[uploadPackageLength];
@@ -70,14 +76,18 @@ class oxim{
 
     bool attemptingToReconnect = false;
 public:
-    oxim() = default;
+    oxim();
     void configure_particle_sensor();
     void configure_screen();
     void configure_valve();
+    void configure_sim900();
 
     void get_data_from_particle_sensor(uint64_t count, uint64_t discard);
 
     void display_information(uint64_t const& saturation, uint64_t const& heartbeat);
+
+    bool check_sim900_response(String const& toCheck = String("OK"), uint32_t const& offset = 4);
+    void send_sms(String const& content);
 
     void init();
     void tick();
