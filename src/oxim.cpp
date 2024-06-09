@@ -258,7 +258,6 @@ void oxim::tick(){
             valve.step(-valveStepsPerRevolution / 12);
             valveCurrentPosition--;
         }
-        Serial.println(valveCurrentPosition);
 
         if(lastSentSms >= smsWaitTime){
             if(spo2Average < 75){

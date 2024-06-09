@@ -25,7 +25,6 @@ void oxim_client::reset(){
 }
 
 void oxim_client::upload_data(const uint8_t* heartRateArray, double heartRatePrecision, const uint8_t* spo2Array, double spo2Precision){
-    Serial.println("upload_data");
     String contentType = "application/json";
 
     DynamicJsonDocument output(4096);
@@ -43,8 +42,6 @@ void oxim_client::upload_data(const uint8_t* heartRateArray, double heartRatePre
 
     String toSend;
     serializeJson(output, toSend);
-
-    Serial.println(toSend);
     
     Preferences prefs;
     prefs.begin("oximPrefs");
@@ -58,12 +55,4 @@ void oxim_client::upload_data(const uint8_t* heartRateArray, double heartRatePre
     client.endRequest();
 
     prefs.end();
-
-    int statusCode = client.responseStatusCode();
-    String response = client.responseBody();
-
-    Serial.print("Status code: ");
-    Serial.println(statusCode);
-    Serial.print("Response: ");
-    Serial.println(response);
 }
