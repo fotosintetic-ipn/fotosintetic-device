@@ -1,18 +1,18 @@
-#include "oxim.hpp"
-#include "oxim_server.hpp"
-#include "oxim_client.hpp"
+#include "polih.hpp"
+#include "polih_server.hpp"
+#include "polih_client.hpp"
 
-oxim_client::oxim_client(){
+polih_client::polih_client(){
     client.setTimeout(500);
 }
 
-bool oxim_client::is_ready() const{
+bool polih_client::is_ready() const{
     return ready;
 }
 
-void oxim_client::set(){
+void polih_client::set(){
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
     if(prefs.isKey("username") && prefs.isKey("password")
       && prefs.getString("username") != "" && prefs.getString("password") != "")
         ready = true;
@@ -20,11 +20,11 @@ void oxim_client::set(){
     prefs.end();
 }
 
-void oxim_client::reset(){
+void polih_client::reset(){
     ready = false;
 }
 
-void oxim_client::upload_data(const uint8_t* heartRateArray, double heartRatePrecision, const uint8_t* spo2Array, double spo2Precision){
+void polih_client::upload_data(const uint8_t* heartRateArray, double heartRatePrecision, const uint8_t* spo2Array, double spo2Precision){
     String contentType = "application/json";
 
     DynamicJsonDocument output(4096);
@@ -44,7 +44,7 @@ void oxim_client::upload_data(const uint8_t* heartRateArray, double heartRatePre
     serializeJson(output, toSend);
     
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
 
     client.beginRequest();
     client.post("/submit");

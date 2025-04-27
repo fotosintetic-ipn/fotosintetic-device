@@ -2,10 +2,10 @@
 #include <Preferences.h>
 
 #include "assets.h"
-#include "oxim.hpp"
-#include "oxim_server.hpp"
+#include "polih.hpp"
+#include "polih_server.hpp"
 
-oxim core;
+polih core;
 
 void setup(){
     core.init();

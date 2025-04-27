@@ -1,5 +1,5 @@
-#ifndef OXIM_assets_included_
-#define OXIM_assets_included_
+#ifndef POLIH_assets_included_
+#define POLIH_assets_included_
 
 constexpr uint8_t mainBitmap[128 * 64] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -131,4 +131,4 @@ constexpr uint8_t numbers[10][18 * 18] PROGMEM = {
     }
 };
 
-#endif // OXIM_assets_included_
+#endif // POLIH_assets_included_

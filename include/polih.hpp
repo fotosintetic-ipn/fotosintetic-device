@@ -1,5 +1,5 @@
-#ifndef OXIM_HPP_INCLUDED_
-#define OXIM_HPP_INCLUDED_
+#ifndef POLIH_HPP_INCLUDED_
+#define POLIH_HPP_INCLUDED_
 
 #include <SPI.h>
 #include <Wire.h>
@@ -11,8 +11,8 @@
 #include <SoftwareSerial.h>
 
 #include "assets.h"
-#include "oxim_server.hpp"
-#include "oxim_client.hpp"
+#include "polih_server.hpp"
+#include "polih_client.hpp"
 
 #include <WiFi.h>
 
@@ -45,7 +45,7 @@ constexpr int32_t valveStepsPerRevolution = 4096;
 
 constexpr uint32_t smsWaitTime = 90000;
 
-class oxim{
+class polih{
     uint32_t irBuffer[bufferLength];
     uint32_t redBuffer[bufferLength];
     int32_t spo2;
@@ -71,12 +71,12 @@ class oxim{
     uint8_t heartRateArrayCurrentIndex = 0;
     uint8_t heartRateArray[uploadPackageLength];
 
-    oxim_server server;
-    oxim_client client;
+    polih_server server;
+    polih_client client;
 
     bool attemptingToReconnect = false;
 public:
-    oxim();
+    polih();
     void configure_particle_sensor();
     void configure_screen();
     void configure_valve();
@@ -93,4 +93,4 @@ public:
     void tick();
 };
 
-#endif // OXIM_HPP_INCLUDED_
+#endif // POLIH_HPP_INCLUDED_

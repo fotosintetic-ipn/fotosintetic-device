@@ -1,19 +1,19 @@
-#include "oxim.hpp"
-#include "oxim_server.hpp"
-#include "oxim_client.hpp"
+#include "polih.hpp"
+#include "polih_server.hpp"
+#include "polih_client.hpp"
 
-void oxim_server::init(){
+void polih_server::init(){
     server.on("/connect", HTTP_POST, connect);
     server.on("/credentials", HTTP_POST, credentials);
     server.onNotFound(notFound);
     server.begin();
 }
 
-void oxim_server::notFound(AsyncWebServerRequest *request){
+void polih_server::notFound(AsyncWebServerRequest *request){
     request -> send(404, "text/plain", "Not found");
 }
 
-void oxim_server::connect(AsyncWebServerRequest* request){
+void polih_server::connect(AsyncWebServerRequest* request){
     if(!request -> hasParam("ssid") || !request -> hasParam("password")){
         request -> send(400, "text/plain", "Missing ssid or password.");
         return;
@@ -23,7 +23,7 @@ void oxim_server::connect(AsyncWebServerRequest* request){
     WiFi.begin(request -> getParam("ssid") -> value(), request -> getParam("password") -> value());
 
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
     prefs.putString("wifi_ssid", request -> getParam("ssid") -> value());
     prefs.putString("wifi_password", request -> getParam("password") -> value());
     prefs.end();
@@ -46,14 +46,14 @@ void oxim_server::connect(AsyncWebServerRequest* request){
     });
 }
 
-void oxim_server::credentials(AsyncWebServerRequest* request){
+void polih_server::credentials(AsyncWebServerRequest* request){
     if(!request -> hasParam("username") || !request -> hasParam("password") || !request -> hasParam("phone_number")){
         request -> send(400, "text/plain", "Missing username, password or phone number");
         return;
     }
 
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
     prefs.putString("username", request -> getParam("username") -> value());
     prefs.putString("password", request -> getParam("password") -> value());
     prefs.putString("phone_number", request -> getParam("phone_number") -> value());

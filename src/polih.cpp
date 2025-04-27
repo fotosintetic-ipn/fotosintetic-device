@@ -1,10 +1,10 @@
-#include "oxim.hpp"
-#include "oxim_server.hpp"
-#include "oxim_client.hpp"
+#include "polih.hpp"
+#include "polih_server.hpp"
+#include "polih_client.hpp"
 
-oxim::oxim() : sim900(4, 5) {}
+polih::polih() : sim900(4, 5) {}
 
-void oxim::configure_particle_sensor(){
+void polih::configure_particle_sensor(){
     if(!particleSensor.begin(Wire, I2C_SPEED_FAST)){
         digitalWrite(fatalErrorLED, HIGH);
         while(true);
@@ -21,19 +21,19 @@ void oxim::configure_particle_sensor(){
     get_data_from_particle_sensor(100, 0);
 }
 
-void oxim::configure_screen(){
+void polih::configure_screen(){
     display = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
     if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
         isDisplayOk = false;
 }
 
-void oxim::configure_valve(){
+void polih::configure_valve(){
     valve = Stepper(2048, 23, 25, 19, 18);
     valve.setSpeed(10);
 }
 
-void oxim::configure_sim900(){
+void polih::configure_sim900(){
     sim900.begin(9600);
     sim900.println((char) 27); // Cancel any previous ongoing operations
 
@@ -58,7 +58,7 @@ void oxim::configure_sim900(){
     sim900Strikes = 0;
 }
 
-void oxim::get_data_from_particle_sensor(uint64_t count, uint64_t discard){
+void polih::get_data_from_particle_sensor(uint64_t count, uint64_t discard){
     if(discard != 0)
         for(uint64_t i = discard; i < bufferLength; i++){
             redBuffer[i - discard] = redBuffer[i];
@@ -75,7 +75,7 @@ void oxim::get_data_from_particle_sensor(uint64_t count, uint64_t discard){
     }
 }
 
-void oxim::display_information(uint64_t const& saturation, uint64_t const& heartbeat){
+void polih::display_information(uint64_t const& saturation, uint64_t const& heartbeat){
     if(!isDisplayOk) return;
 
     display.clearDisplay();
@@ -92,7 +92,7 @@ void oxim::display_information(uint64_t const& saturation, uint64_t const& heart
     display.display();
 }
 
-bool oxim::check_sim900_response(String const& toCheck, uint32_t const& offset){
+bool polih::check_sim900_response(String const& toCheck, uint32_t const& offset){
     delay(500);
     if(!sim900.available()){
         sim900Strikes++;
@@ -108,11 +108,11 @@ bool oxim::check_sim900_response(String const& toCheck, uint32_t const& offset){
     return true;
 }
 
-void oxim::send_sms(String const& content){
+void polih::send_sms(String const& content){
     String phone_number;
 
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
     if(!prefs.isKey("phone_number") || prefs.getString("phone_number") == "")
         return;
     phone_number = prefs.getString("phone_number");
@@ -141,7 +141,7 @@ void oxim::send_sms(String const& content){
     sim900Strikes = 0;
 }
 
-void oxim::init(){
+void polih::init(){
     pinMode(fatalErrorLED, OUTPUT);
     digitalWrite(fatalErrorLED, LOW);
     pinMode(LED_BUILTIN, OUTPUT);
@@ -157,9 +157,9 @@ void oxim::init(){
     configure_valve();
     configure_sim900();
     WiFiClass::mode(WIFI_AP_STA);
-    WiFi.softAP("OXIM");
+    WiFi.softAP("POLIH");
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
     if(prefs.isKey("wifi_ssid") && prefs.isKey("wifi_password")
       && prefs.getString("wifi_ssid") != "" && prefs.getString("wifi_password") != ""){
         WiFi.begin(prefs.getString("wifi_ssid"), prefs.getString("wifi_password"));
@@ -169,7 +169,7 @@ void oxim::init(){
     server.init();
 }
 
-void oxim::tick(){
+void polih::tick(){
     static int samples = 0;
     static uint64_t timeElapsed = 0;
     static uint64_t pastTime = millis();
@@ -213,7 +213,7 @@ void oxim::tick(){
         attemptingToReconnect = false;
     }
     Preferences prefs;
-    prefs.begin("oximPrefs");
+    prefs.begin("polihPrefs");
     if(WiFiClass::status() == WL_CONNECTION_LOST && timeElapsed >= wifiAttemptReconnectTimeout
       && prefs.isKey("wifi_ssid") && prefs.isKey("wifi_password")
       && prefs.getString("wifi_ssid") != "" && prefs.getString("wifi_password") != ""){
@@ -224,7 +224,7 @@ void oxim::tick(){
     prefs.end();
 
     if(digitalRead(resetButton)){
-        prefs.begin("oximPrefs");
+        prefs.begin("polihPrefs");
         prefs.remove("wifi_ssid");
         prefs.remove("wifi_password");
         prefs.remove("username");
