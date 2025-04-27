@@ -48,7 +48,7 @@ void polih_server::connect(AsyncWebServerRequest* request){
 
 void polih_server::credentials(AsyncWebServerRequest* request){
     if(!request -> hasParam("id") || !request -> hasParam("password")){
-        request -> send(400, "text/plain", "Missing id, password or phone number");
+        request -> send(400, "text/plain", "Missing id or password");
         return;
     }
 

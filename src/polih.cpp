@@ -63,9 +63,16 @@ void polih::tick(){
         ESP.restart();
     }
 
+    if(phArrayCurrentIndex < uploadPackageLength){
+        phArray[phArrayCurrentIndex] = 14.0 * analogReadMilliVolts(phSensor) / 3300.0;
+        phArrayCurrentIndex++;
+        samples++;
+    }
+
     if(samples >= uploadPackageLength){
         if(client.is_ready())
-            client.upload_data();
+            client.upload_data(phArray);
+        phArrayCurrentIndex = 0;
         samples = 0;
     }
 

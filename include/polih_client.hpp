@@ -17,7 +17,7 @@ public:
     bool is_ready() const;
     void set();
     void reset();
-    void upload_data();
+    void upload_data(const double* phArray);
 };
 
 #endif // POLIH_CLIENT_INCLUDED_
