@@ -1,9 +1,6 @@
 #include <Arduino.h>
-#include <Preferences.h>
 
-#include "assets.h"
 #include "polih.hpp"
-#include "polih_server.hpp"
 
 polih core;
 

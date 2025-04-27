@@ -47,16 +47,15 @@ void polih_server::connect(AsyncWebServerRequest* request){
 }
 
 void polih_server::credentials(AsyncWebServerRequest* request){
-    if(!request -> hasParam("username") || !request -> hasParam("password") || !request -> hasParam("phone_number")){
-        request -> send(400, "text/plain", "Missing username, password or phone number");
+    if(!request -> hasParam("id") || !request -> hasParam("password")){
+        request -> send(400, "text/plain", "Missing id, password or phone number");
         return;
     }
 
     Preferences prefs;
     prefs.begin("polihPrefs");
-    prefs.putString("username", request -> getParam("username") -> value());
+    prefs.putString("id", request -> getParam("id") -> value());
     prefs.putString("password", request -> getParam("password") -> value());
-    prefs.putString("phone_number", request -> getParam("phone_number") -> value());
     prefs.end();
 
     request -> send(200);

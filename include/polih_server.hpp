@@ -2,7 +2,6 @@
 #define POLIH_SERVER_INCLUDED_
 
 #include <WiFi.h>
-#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
 class polih_server{
