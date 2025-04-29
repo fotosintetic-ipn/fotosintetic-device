@@ -13,8 +13,8 @@ bool polih_client::is_ready() const{
 void polih_client::set(){
     Preferences prefs;
     prefs.begin("polihPrefs");
-    if(prefs.isKey("id") && prefs.isKey("password")
-      && prefs.getString("id") != "" && prefs.getString("password") != "")
+    if(prefs.isKey("device_name") && prefs.isKey("password")
+      && prefs.getString("device_name") != "" && prefs.getString("password") != "")
         ready = true;
 
     prefs.end();
@@ -41,7 +41,7 @@ void polih_client::upload_data(const double* phArray){
 
     client.beginRequest();
     client.post("/submit");
-    client.sendBasicAuth(prefs.getString("id"), prefs.getString("password"));
+    client.sendBasicAuth(prefs.getString("device_name"), prefs.getString("password"));
     client.sendHeader("Content-Type", contentType);
     client.sendHeader("Content-Length", toSend.length());
     client.print(toSend);

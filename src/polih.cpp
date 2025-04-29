@@ -56,7 +56,7 @@ void polih::tick(){
         prefs.begin("polihPrefs");
         prefs.remove("wifi_ssid");
         prefs.remove("wifi_password");
-        prefs.remove("id");
+        prefs.remove("device_name");
         prefs.remove("password");
         prefs.end();
 

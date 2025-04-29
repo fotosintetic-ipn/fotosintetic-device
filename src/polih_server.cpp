@@ -47,14 +47,14 @@ void polih_server::connect(AsyncWebServerRequest* request){
 }
 
 void polih_server::credentials(AsyncWebServerRequest* request){
-    if(!request -> hasParam("id") || !request -> hasParam("password")){
-        request -> send(400, "text/plain", "Missing id or password");
+    if(!request -> hasParam("device_name") || !request -> hasParam("password")){
+        request -> send(400, "text/plain", "Missing device name or password");
         return;
     }
 
     Preferences prefs;
     prefs.begin("polihPrefs");
-    prefs.putString("id", request -> getParam("id") -> value());
+    prefs.putString("device_name", request -> getParam("device_name") -> value());
     prefs.putString("password", request -> getParam("password") -> value());
     prefs.end();
 
