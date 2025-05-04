@@ -1,18 +1,18 @@
-#include "polih.hpp"
-#include "polih_server.hpp"
-#include "polih_client.hpp"
+#include "fotosintetic.hpp"
+#include "fotosintetic_server.hpp"
+#include "fotosintetic_client.hpp"
 
-polih_client::polih_client(){
+fotosintetic_client::fotosintetic_client(){
     client.setTimeout(500);
 }
 
-bool polih_client::is_ready() const{
+bool fotosintetic_client::is_ready() const{
     return ready;
 }
 
-void polih_client::set(){
+void fotosintetic_client::set(){
     Preferences prefs;
-    prefs.begin("polihPrefs");
+    prefs.begin("fotosinteticPrefs");
     if(prefs.isKey("device_name") && prefs.isKey("password")
       && prefs.getString("device_name") != "" && prefs.getString("password") != "")
         ready = true;
@@ -20,11 +20,11 @@ void polih_client::set(){
     prefs.end();
 }
 
-void polih_client::reset(){
+void fotosintetic_client::reset(){
     ready = false;
 }
 
-void polih_client::upload_data(const double* phArray){
+void fotosintetic_client::upload_data(const double* phArray){
     String contentType = "application/json";
 
     DynamicJsonDocument output(4096);
@@ -37,7 +37,7 @@ void polih_client::upload_data(const double* phArray){
     serializeJson(output, toSend);
 
     Preferences prefs;
-    prefs.begin("polihPrefs");
+    prefs.begin("fotosinteticPrefs");
 
     client.beginRequest();
     client.post("/submit");

@@ -1,19 +1,19 @@
-#include "polih.hpp"
-#include "polih_server.hpp"
-#include "polih_client.hpp"
+#include "fotosintetic.hpp"
+#include "fotosintetic_server.hpp"
+#include "fotosintetic_client.hpp"
 
-void polih_server::init(){
+void fotosintetic_server::init(){
     server.on("/connect", HTTP_POST, connect);
     server.on("/credentials", HTTP_POST, credentials);
     server.onNotFound(notFound);
     server.begin();
 }
 
-void polih_server::notFound(AsyncWebServerRequest *request){
+void fotosintetic_server::notFound(AsyncWebServerRequest *request){
     request -> send(404, "text/plain", "Not found");
 }
 
-void polih_server::connect(AsyncWebServerRequest* request){
+void fotosintetic_server::connect(AsyncWebServerRequest* request){
     if(!request -> hasParam("ssid") || !request -> hasParam("password")){
         request -> send(400, "text/plain", "Missing ssid or password.");
         return;
@@ -23,7 +23,7 @@ void polih_server::connect(AsyncWebServerRequest* request){
     WiFi.begin(request -> getParam("ssid") -> value(), request -> getParam("password") -> value());
 
     Preferences prefs;
-    prefs.begin("polihPrefs");
+    prefs.begin("fotosinteticPrefs");
     prefs.putString("wifi_ssid", request -> getParam("ssid") -> value());
     prefs.putString("wifi_password", request -> getParam("password") -> value());
     prefs.end();
@@ -46,14 +46,14 @@ void polih_server::connect(AsyncWebServerRequest* request){
     });
 }
 
-void polih_server::credentials(AsyncWebServerRequest* request){
+void fotosintetic_server::credentials(AsyncWebServerRequest* request){
     if(!request -> hasParam("device_name") || !request -> hasParam("password")){
         request -> send(400, "text/plain", "Missing device name or password");
         return;
     }
 
     Preferences prefs;
-    prefs.begin("polihPrefs");
+    prefs.begin("fotosinteticPrefs");
     prefs.putString("device_name", request -> getParam("device_name") -> value());
     prefs.putString("password", request -> getParam("password") -> value());
     prefs.end();

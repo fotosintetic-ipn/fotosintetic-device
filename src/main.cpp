@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
-#include "polih.hpp"
+#include "fotosintetic.hpp"
 
 constexpr uint32_t samplesPerMinute = 10;
 
-polih core;
+fotosintetic core;
 
 void setup(){
     core.init();
