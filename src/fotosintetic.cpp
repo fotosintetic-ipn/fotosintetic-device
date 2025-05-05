@@ -22,13 +22,14 @@ void fotosintetic::init(){
 
 void fotosintetic::tick(){
     static int samples = 0;
-    static uint64_t timeElapsed = 0;
+    static uint64_t wifiTimer = 0;
+    static uint64_t mainTimer = 0;
     static uint64_t pastTime = millis();
     static bool status;
 
     Preferences prefs;
     prefs.begin("fotosinteticPrefs");
-    if(WiFiClass::status() == WL_CONNECTION_LOST && timeElapsed >= wifiAttemptReconnectTimeout
+    if(WiFiClass::status() == WL_CONNECTION_LOST && wifiTimer >= wifiAttemptReconnectTimeout
       && prefs.isKey("wifi_ssid") && prefs.isKey("wifi_password")
       && prefs.getString("wifi_ssid") != "" && prefs.getString("wifi_password") != ""){
         WiFi.disconnect();
@@ -46,36 +47,43 @@ void fotosintetic::tick(){
         digitalWrite(BUILTIN_LED, LOW);
         attemptingToReconnect = false;
     }
-    if(attemptingToReconnect && timeElapsed >= 500){
+    if(attemptingToReconnect && wifiTimer >= 500){
         digitalWrite(BUILTIN_LED, status);
-        timeElapsed = 0;
+        wifiTimer = 0;
         status = !status;
     }
 
-    if(digitalRead(resetButton)){
-        prefs.begin("fotosinteticPrefs");
-        prefs.remove("wifi_ssid");
-        prefs.remove("wifi_password");
-        prefs.remove("device_name");
-        prefs.remove("password");
-        prefs.end();
+    if(mainTimer >= 3600000 / samplesPerHour){
+        if(digitalRead(resetButton)){
+            prefs.begin("fotosinteticPrefs");
+            prefs.remove("wifi_ssid");
+            prefs.remove("wifi_password");
+            prefs.remove("device_name");
+            prefs.remove("password");
+            prefs.end();
 
-        ESP.restart();
+            ESP.restart();
+        }
+
+        if(phArrayCurrentIndex < uploadPackageLength){
+            phArray[phArrayCurrentIndex] = 14.0 * analogReadMilliVolts(phSensor) / 3300.0;
+            phArrayCurrentIndex++;
+            samples++;
+        }
+
+        if(samples >= uploadPackageLength){
+            if(client.is_ready())
+                client.upload_data(phArray);
+            phArrayCurrentIndex = 0;
+            samples = 0;
+        }
+
+        mainTimer = 0;
     }
 
-    if(phArrayCurrentIndex < uploadPackageLength){
-        phArray[phArrayCurrentIndex] = 14.0 * analogReadMilliVolts(phSensor) / 3300.0;
-        phArrayCurrentIndex++;
-        samples++;
-    }
+    sleep(250);
 
-    if(samples >= uploadPackageLength){
-        if(client.is_ready())
-            client.upload_data(phArray);
-        phArrayCurrentIndex = 0;
-        samples = 0;
-    }
-
-    timeElapsed += millis() - pastTime;
+    mainTimer += millis() - pastTime;
+    wifiTimer += millis() - pastTime;
     pastTime = millis();
 }

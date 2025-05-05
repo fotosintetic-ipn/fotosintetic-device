@@ -13,6 +13,7 @@ constexpr uint8_t resetButton = 34;
 constexpr uint8_t phSensor = 35;
 
 constexpr uint32_t wifiAttemptReconnectTimeout = 30000;
+constexpr uint32_t samplesPerHour = 1000;
 
 class fotosintetic{
     fotosintetic_server server;
