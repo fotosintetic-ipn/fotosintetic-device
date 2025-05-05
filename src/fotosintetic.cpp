@@ -6,6 +6,11 @@ void fotosintetic::init(){
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
     pinMode(resetButton, INPUT);
+    pinMode(phSensor, INPUT);
+
+    dht = DHT(dhtSensor, DHT11);
+    Wire.begin();
+    mpu.initialize();
 
     WiFiClass::mode(WIFI_AP_STA);
     WiFi.softAP("FOTOSINTETIC");
@@ -21,7 +26,6 @@ void fotosintetic::init(){
 }
 
 void fotosintetic::tick(){
-    static int samples = 0;
     static uint64_t wifiTimer = 0;
     static uint64_t mainTimer = 0;
     static uint64_t pastTime = millis();
@@ -53,29 +57,50 @@ void fotosintetic::tick(){
         status = !status;
     }
 
+    if(digitalRead(resetButton)){
+        prefs.begin("fotosinteticPrefs");
+        prefs.remove("wifi_ssid");
+        prefs.remove("wifi_password");
+        prefs.remove("device_name");
+        prefs.remove("password");
+        prefs.end();
+
+        ESP.restart();
+    }
+
     if(mainTimer >= 3600000 / samplesPerHour){
-        if(digitalRead(resetButton)){
-            prefs.begin("fotosinteticPrefs");
-            prefs.remove("wifi_ssid");
-            prefs.remove("wifi_password");
-            prefs.remove("device_name");
-            prefs.remove("password");
-            prefs.end();
+        if(arrayIndex < uploadPackageLength){
+            ph[arrayIndex] = 14.0 * analogReadMilliVolts(phSensor) / 3300.0;
 
-            ESP.restart();
+            if(!isnan(dht.readHumidity()))
+                ambientHumidity[arrayIndex] = dht.readHumidity();
+
+            if(!isnan(dht.readTemperature()))
+                ambientTemperature[arrayIndex] = dht.readTemperature();
+            
+            int16_t ax;
+            int16_t ay;
+            int16_t az;
+            mpu.getAcceleration(&ax, &ay, &az);
+            double axg = ax / 16384.0;
+            double ayg = ay / 16384.0;
+            double azg = az / 16384.0;
+            double rollValue = atan2(ayg, azg) * 180.0 / PI;
+            double pitchValue = atan2(-axg, sqrt(ayg * ayg + azg * azg)) * 180.0 / PI;
+            roll[arrayIndex] = rollValue;
+            pitch[arrayIndex] = pitchValue;
+
+            moisture[arrayIndex] = map(analogReadMilliVolts(moistureSensor), 1200, 2300, 0, 100);
+            windSpeed[arrayIndex] = map(analogReadMilliVolts(anemometer), 0, 3300, 0, 40);
+
+            arrayIndex++;
         }
 
-        if(phArrayCurrentIndex < uploadPackageLength){
-            phArray[phArrayCurrentIndex] = 14.0 * analogReadMilliVolts(phSensor) / 3300.0;
-            phArrayCurrentIndex++;
-            samples++;
-        }
-
-        if(samples >= uploadPackageLength){
+        if(arrayIndex >= uploadPackageLength){
             if(client.is_ready())
-                client.upload_data(phArray);
-            phArrayCurrentIndex = 0;
-            samples = 0;
+                client.upload_data(ph, ambientHumidity, ambientTemperature,
+                                   roll, pitch, moisture, windSpeed);
+            arrayIndex = 0;
         }
 
         mainTimer = 0;

@@ -17,7 +17,9 @@ public:
     bool is_ready() const;
     void set();
     void reset();
-    void upload_data(const double* phArray);
+    void upload_data(const double* ph, const double* ambientHumidity, const double* ambientTemperature,
+                     const double* roll, const double* pitch, const double* moisture, 
+                     const double* windSpeed);
 };
 
 #endif // FOTOSINTETIC_CLIENT_INCLUDED_
