@@ -8,7 +8,7 @@
 
 class fotosintetic_client{
     bool ready = false;
-    const char* server_address = "";
+    const char* server_address = "enhanced-muskrat-uncommon.ngrok-free.app";
     uint16_t server_port = 80;
     WiFiClient w;
     HttpClient client = HttpClient(w, server_address, server_port);

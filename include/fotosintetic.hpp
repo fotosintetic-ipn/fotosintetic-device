@@ -12,11 +12,11 @@
 
 constexpr uint8_t uploadPackageLength = 10;
 
-constexpr uint8_t resetButton = 39;
+constexpr uint8_t resetButton = 26;
 constexpr uint8_t phSensor = 34;
 constexpr uint8_t dhtSensor = 32;
 constexpr uint8_t moistureSensor = 35;
-constexpr uint8_t anemometer = 36;
+constexpr uint8_t anemometer = 39;
 
 constexpr uint32_t wifiAttemptReconnectTimeout = 30000;
 constexpr uint32_t samplesPerHour = 1000;
@@ -25,7 +25,7 @@ class fotosintetic{
     fotosintetic_server server;
     fotosintetic_client client;
 
-    DHT dht = DHT(0, 0);
+    DHT dht = DHT(dhtSensor, DHT11);
     MPU6050 mpu;
 
     double ph[uploadPackageLength];

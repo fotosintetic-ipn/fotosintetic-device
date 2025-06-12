@@ -8,14 +8,13 @@ void fotosintetic::init(){
     pinMode(resetButton, INPUT);
     pinMode(phSensor, INPUT);
 
-    dht = DHT(dhtSensor, DHT11);
     Wire.begin();
     mpu.initialize();
 
     WiFiClass::mode(WIFI_AP_STA);
     WiFi.softAP("FOTOSINTETIC");
     Preferences prefs;
-    prefs.begin("fotosinteticPrefs");
+    prefs.begin("fotosintetic");
     if(prefs.isKey("wifi_ssid") && prefs.isKey("wifi_password")
       && prefs.getString("wifi_ssid") != "" && prefs.getString("wifi_password") != ""){
         WiFi.begin(prefs.getString("wifi_ssid"), prefs.getString("wifi_password"));
@@ -32,7 +31,7 @@ void fotosintetic::tick(){
     static bool status;
 
     Preferences prefs;
-    prefs.begin("fotosinteticPrefs");
+    prefs.begin("fotosintetic");
     if(WiFiClass::status() == WL_CONNECTION_LOST && wifiTimer >= wifiAttemptReconnectTimeout
       && prefs.isKey("wifi_ssid") && prefs.isKey("wifi_password")
       && prefs.getString("wifi_ssid") != "" && prefs.getString("wifi_password") != ""){
@@ -58,7 +57,7 @@ void fotosintetic::tick(){
     }
 
     if(digitalRead(resetButton)){
-        prefs.begin("fotosinteticPrefs");
+        prefs.begin("fotosintetic");
         prefs.remove("wifi_ssid");
         prefs.remove("wifi_password");
         prefs.remove("device_name");
@@ -106,7 +105,7 @@ void fotosintetic::tick(){
         mainTimer = 0;
     }
 
-    sleep(250);
+    delay(250);
 
     mainTimer += millis() - pastTime;
     wifiTimer += millis() - pastTime;

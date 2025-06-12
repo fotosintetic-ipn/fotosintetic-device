@@ -23,7 +23,7 @@ void fotosintetic_server::connect(AsyncWebServerRequest* request){
     WiFi.begin(request -> getParam("ssid") -> value(), request -> getParam("password") -> value());
 
     Preferences prefs;
-    prefs.begin("fotosinteticPrefs");
+    prefs.begin("fotosintetic");
     prefs.putString("wifi_ssid", request -> getParam("ssid") -> value());
     prefs.putString("wifi_password", request -> getParam("password") -> value());
     prefs.end();
@@ -53,7 +53,7 @@ void fotosintetic_server::credentials(AsyncWebServerRequest* request){
     }
 
     Preferences prefs;
-    prefs.begin("fotosinteticPrefs");
+    prefs.begin("fotosintetic");
     prefs.putString("device_name", request -> getParam("device_name") -> value());
     prefs.putString("password", request -> getParam("password") -> value());
     prefs.end();

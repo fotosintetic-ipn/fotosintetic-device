@@ -12,7 +12,7 @@ bool fotosintetic_client::is_ready() const{
 
 void fotosintetic_client::set(){
     Preferences prefs;
-    prefs.begin("fotosinteticPrefs");
+    prefs.begin("fotosintetic");
     if(prefs.isKey("device_name") && prefs.isKey("password")
       && prefs.getString("device_name") != "" && prefs.getString("password") != "")
         ready = true;
@@ -50,7 +50,7 @@ void fotosintetic_client::upload_data(const double* ph, const double* ambientHum
     serializeJson(output, toSend);
 
     Preferences prefs;
-    prefs.begin("fotosinteticPrefs");
+    prefs.begin("fotosintetic");
 
     client.beginRequest();
     client.post("/submit");
